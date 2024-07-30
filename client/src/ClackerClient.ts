@@ -9,8 +9,7 @@ const URL_DEFAULT = 'ws://localhost:8080';
 export class ClackerClient {
   clackCount: number = 0;
   user: string;
-  url: string | null = null;
-  socket: WebSocket | null = null;
+  socket: WebSocket;
 
   public get connected() {
     return this.socket && this.socket.readyState === this.socket.OPEN;
@@ -18,7 +17,10 @@ export class ClackerClient {
 
   constructor(user: string, url?: string) {
     this.user = user;
-    if (url) this.connect(url);
+
+    this.socket = new WebSocket(url ?? URL_DEFAULT);
+    if (!this.socket) throw new Error('WebSocket connection not established.');
+    this.socket.addEventListener('open', this.sendIdentity.bind(this));
   }
 
   sendClack() {
@@ -31,12 +33,6 @@ export class ClackerClient {
     if (!this.socket) throw new Error('WebSocket connection not established.');
     const message = new IdentityMessage(this.user);
     this.socket.send(JSON.stringify(message));
-  }
-
-  connect(url?: string) {
-    this.socket = new WebSocket(url ?? URL_DEFAULT);
-    if (!this.socket) throw new Error('WebSocket connection not established.');
-    this.socket.addEventListener('open', this.sendIdentity.bind(this));
   }
 
   // async getClacks(): Promise<GetClacksResponse> {
