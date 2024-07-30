@@ -4,7 +4,7 @@
 
 import { ClientStateDefault, type ClientState } from "./ClientState";
 import { ClientStateStore } from "./ClientStateStore";
-import { MessageCount, Message, MessageType, MessageClack, MessageIdentity } from '../../common/Message';
+import { MessageCount, Message, MessageType, MessageClack, MessageIdentity, MessageRateLimit } from '../../common/Message';
 
 const URL_DEFAULT = 'ws://localhost:8080';
 
@@ -23,16 +23,20 @@ export class ClackerClient {
     this.socket.addEventListener('close', this.onClose.bind(this));
   }
 
-  sendClack() {
-    if (!this.socket) throw new Error('WebSocket connection not established.');
-    const message = new MessageClack();
+  _sendMessage(message: Message) {
+    if (!this.socket) throw new Error('WebSocket connection not established');
+    if (!this.state.connected) return;
     this.socket.send(JSON.stringify(message));
   }
 
+  sendClack() {
+    const message = new MessageClack();
+    this._sendMessage(message);
+  }
+
   sendIdentity(user: string) {
-    if (!this.socket) throw new Error('WebSocket connection not established.');
     const message = new MessageIdentity(this.state.user);
-    this.socket.send(JSON.stringify(message));
+    this._sendMessage(message);
   }
 
   onClose() {
@@ -49,6 +53,8 @@ export class ClackerClient {
     switch(message.type) {
       case MessageType.Count:
         ClientStateStore.update(state => ({...state, count: (message as MessageCount).count}));
+      case MessageType.RateLimit:
+        ClientStateStore.update(state => ({...state, nextRefresh: (message as MessageRateLimit).nextRefresh}));
     }
   }
 

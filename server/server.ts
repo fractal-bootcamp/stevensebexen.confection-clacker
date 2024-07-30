@@ -1,14 +1,15 @@
 import WS from 'ws';
 import { Client } from './Client';
-import { Message, MessageClack, MessageCount, MessageType } from '../common/Message';
-import { ServerState } from './ServerState';
+import { Message, MessageCount, MessageRateLimit, } from '../common/Message';
+import { ClackRateLimiter } from './ClackRateLimiter';
+import { redis } from './redis';
 
 const DEFAULT_PORT = 8080;
 
 export class Server {
   socket: WS.Server;
   connectedClients: Client[] = [];
-  serverState: ServerState = new ServerState();
+  rateLimiter: ClackRateLimiter = new ClackRateLimiter();
 
   constructor(port?: number) {
     this.socket = new WS.WebSocketServer({ port: port ?? DEFAULT_PORT });
@@ -19,8 +20,13 @@ export class Server {
     client.socket.send(JSON.stringify(message));
   }
   
-  sendCount(client: Client) {
-    const message = new MessageCount(this.serverState.clackCount);
+  async sendCount(client: Client) {
+    const message = new MessageCount(parseInt(await redis.get('clackCount') ?? '0'));
+    this._sendMessage(message, client);
+  }
+
+  sendRateLimit(client: Client) {
+    const message = new MessageRateLimit(this.rateLimiter.nextRefresh)
     this._sendMessage(message, client);
   }
   
@@ -30,8 +36,13 @@ export class Server {
     });
   }
   
-  clack() {
-    this.serverState.clackCount += 1;
+  async clack(client: Client) {
+    if (!client.info?.user) return;
+    if (!(await this.rateLimiter.request(client.info?.user))) {
+      this.sendRateLimit(client);
+      return;
+    }
+    await redis.incr('clackCount');
     this.broadcastCount();
   }
 
