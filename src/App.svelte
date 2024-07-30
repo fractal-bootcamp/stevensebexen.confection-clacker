@@ -22,6 +22,9 @@
     <img src='confection.png' alt='A cookie with pastel pink icing and some sprinkles'>
   </button>
   <p id='clack-count'>Confections clacked: {clackCount}</p>
+  {#if !client.connected}
+    <p id='error'>(Not connected to server.)</p>
+  {/if}
 </main>
 
 <style>
