@@ -11,7 +11,10 @@ export class ClackerClient {
   user: string;
   url: string | null = null;
   socket: WebSocket | null = null;
-  connected: boolean = false;
+
+  public get connected() {
+    return this.socket && this.socket.readyState === this.socket.OPEN;
+  }
 
   constructor(user: string, url?: string) {
     this.user = user;
