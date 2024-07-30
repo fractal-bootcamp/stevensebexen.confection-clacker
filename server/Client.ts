@@ -5,7 +5,7 @@ import { Message, MessageIdentity, MessageType } from '../common/Message';
 export class Client {
   socket: WS;
   info: ClientInfo | null = null;
-  onClack: (() => void) | null = null;
+  onClack: ((client: Client) => void) | null = null;
   onClose: ((clientToClose: Client) => void) | null = null;
 
   constructor(socket: WS) {
@@ -38,6 +38,6 @@ export class Client {
 
   clack() {
     if (!this.onClack) return;
-    this.onClack();
+    this.onClack(this);
   }
 }
