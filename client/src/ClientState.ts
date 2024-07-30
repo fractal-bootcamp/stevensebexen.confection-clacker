@@ -7,5 +7,5 @@ export type ClientState = {
 export const ClientStateDefault: () => ClientState = () => ({
   count: 0,
   connected: false,
-  user: 'Someone'
+  user: 'Clacker'
 });
