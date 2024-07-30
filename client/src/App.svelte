@@ -35,7 +35,7 @@
   <p id='clack-count'>Confections clacked: {$ClientStateStore.count}</p>
   <ClackerName on:change={onUserChange} />
   {#if !$ClientStateStore.connected}
-    <p id='error'>(Not connected to server.)</p>
+    <p id='error'>Not connected to server. Try refreshing, or come back later.</p>
   {:else if rateLimited}
     <p id='error'>You're clacking too quickly! Please wait.</p>
   {/if}

@@ -3,13 +3,15 @@ import { Client } from './Client';
 import { Message, MessageCount, MessageRateLimit, } from '../common/Message';
 import { ClackRateLimiter } from './ClackRateLimiter';
 import { redis } from './redis';
+import { ClackStore } from './ClackStore';
 
 const DEFAULT_PORT = 8080;
 
 export class Server {
   socket: WS.Server;
   connectedClients: Client[] = [];
-  rateLimiter: ClackRateLimiter = new ClackRateLimiter();
+  rateLimiter: ClackRateLimiter = new ClackRateLimiter(redis);
+  clackStore: ClackStore = new ClackStore(redis);
 
   constructor(port?: number) {
     this.socket = new WS.WebSocketServer({ port: port ?? DEFAULT_PORT });
@@ -21,7 +23,7 @@ export class Server {
   }
   
   async sendCount(client: Client) {
-    const message = new MessageCount(parseInt(await redis.get('clackCount') ?? '0'));
+    const message = new MessageCount(await this.clackStore.getCount());
     this._sendMessage(message, client);
   }
 
@@ -42,7 +44,7 @@ export class Server {
       this.sendRateLimit(client);
       return;
     }
-    await redis.incr('clackCount');
+    await this.clackStore.incr();
     this.broadcastCount();
   }
 

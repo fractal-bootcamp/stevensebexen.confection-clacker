@@ -1,29 +1,40 @@
-import {redis} from './redis';
+import {Redis} from 'ioredis';
 
 export class ClackRateLimiter {
+  redis: Redis;
   requestLimit: number = 10;
   requestWindow: number = 1000;
   nextRefresh: number = Date.now() + this.requestWindow;
 
-  constructor(requestLimit?: number, requestWindow?: number) {
+  constructor(redis: Redis, requestLimit?: number, requestWindow?: number) {
+    this.redis = redis;
     if (requestLimit) this.requestLimit = requestLimit;
     if (requestWindow) this.requestWindow = requestWindow;
 
     setInterval(this.refresh.bind(this), this.requestWindow);
   }
 
+  async getUserKeys() {
+    return this.redis.keys('user_*');
+  }
+
+  getUserKey(user: string) {
+    return `user_${user}`;
+  }
+
   async refresh() {
     this.nextRefresh = Date.now() + this.requestWindow;
-    const keys = await redis.keys('user_*');
-    if (keys.length) await redis.del(keys);
+    const keys = await this.getUserKeys();
+    if (keys.length) await this.redis.del(keys);
   }
 
   async request(user: string): Promise<boolean> {
-    const userKey = `user_${user}`;
-    redis.setnx(userKey, '0');
-    const requestsMade = parseInt(await redis.get(userKey) ?? 'Infinity');
+    const userKey = this.getUserKey(user);
+    await this.redis.setnx(userKey, '0');
+    const requestsMade = parseInt(await this.redis.get(userKey) ?? 'Infinity');
     if (requestsMade >= this.requestLimit) return false;
-    redis.incr(userKey);
+    this.redis.incr(userKey);
     return true;
   }
+
 }
