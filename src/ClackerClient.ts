@@ -22,7 +22,7 @@ export class ClackerClient {
   }
 
   sendClack() {
-    if (!this.socket) throw new Error();
+    if (!this.socket || !this.connected) throw new Error('WebSocket connection not established.');
     const message = new ClackMessage();
     this.socket.send(JSON.stringify(message));
   }
@@ -35,7 +35,7 @@ export class ClackerClient {
 
   connect(url?: string) {
     this.socket = new WebSocket(url ?? URL_DEFAULT);
-    if (!this.socket) throw new Error();
+    if (!this.socket || !this.connected) throw new Error('WebSocket connection not established.');
     this.socket.addEventListener('open', this.sendIdentity.bind(this));
   }
 
