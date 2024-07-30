@@ -1,19 +1,12 @@
 <script lang="ts">
-    import { ClackerClient } from "./ClackerClient";
+  import { ClackerClient } from "./ClackerClient";
+  import {ClientStateStore} from './ClientStateStore';
 
-    
-  let clackCount = 0;
-  let user = 'Clacker';
-
-  const client = new ClackerClient(user);
+  const client = new ClackerClient($ClientStateStore.user);
 
   function clackConfection() {
-    // Optimistic display
-    clackCount++;
     client.sendClack();
   }
-
-  // client.onCountUpdate(newCount => clackCount = newCount);
 </script>
 
 <main>
@@ -21,8 +14,8 @@
   <button id='confection' on:click={clackConfection}>
     <img src='confection.png' alt='A cookie with pastel pink icing and some sprinkles'>
   </button>
-  <p id='clack-count'>Confections clacked: {clackCount}</p>
-  {#if !client.connected}
+  <p id='clack-count'>Confections clacked: {$ClientStateStore.count}</p>
+  {#if !$ClientStateStore.connected}
     <p id='error'>(Not connected to server.)</p>
   {/if}
 </main>
