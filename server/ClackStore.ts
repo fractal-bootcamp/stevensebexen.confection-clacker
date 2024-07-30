@@ -1,7 +1,7 @@
 import { Redis } from "ioredis";
 
 export class ClackStore {
-  redis
+  redis: Redis;
 
   constructor(redis: Redis) {
     this.redis = redis;
