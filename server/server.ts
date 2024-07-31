@@ -1,20 +1,20 @@
-import WS from 'ws';
-import { Client } from './Client';
-import { Message, MessageCount, MessageRateLimit, } from '../common/Message';
-import { ClackRateLimiter } from './ClackRateLimiter';
-import { redis } from './redis';
-import { ClackStore } from './ClackStore';
+import { WebSocket, WebSocketServer } from 'ws';
+import { Client } from './Client.js';
+import { Message, MessageCount, MessageRateLimit, } from './Message.js';
+import { ClackRateLimiter } from './ClackRateLimiter.js';
+import { redis } from './redis.js';
+import { ClackStore } from './ClackStore.js';
 
 const DEFAULT_PORT = 8080;
 
 export class Server {
-  socket: WS.Server;
+  socket: WebSocketServer;
   connectedClients: Client[] = [];
   rateLimiter: ClackRateLimiter = new ClackRateLimiter(redis);
   clackStore: ClackStore = new ClackStore(redis);
 
   constructor(port?: number) {
-    this.socket = new WS.WebSocketServer({ port: port ?? DEFAULT_PORT });
+    this.socket = new WebSocketServer({ port: port ?? DEFAULT_PORT });
     this.socket.on('connection', this.onConnection.bind(this));
   }
 
@@ -54,7 +54,7 @@ export class Server {
     this.connectedClients.splice(toCloseIndex, 1);
   }
   
-  onConnection(socket: WS) {
+  onConnection(socket: WebSocket) {
     console.log('Client connected');
     const client = new Client(socket);
     client.onClack = this.clack.bind(this);

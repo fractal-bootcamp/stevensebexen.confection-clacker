@@ -6,7 +6,7 @@ import { ClientStateDefault, type ClientState } from "./ClientState";
 import { ClientStateStore } from "./ClientStateStore";
 import { MessageCount, Message, MessageType, MessageClack, MessageIdentity, MessageRateLimit } from '../../common/Message';
 
-const URL_DEFAULT = 'ws://localhost:8080';
+const URL_DEFAULT = process.env.SERVER_URL ?? 'ws://localhost:8080';
 
 export class ClackerClient {
   state: ClientState = ClientStateDefault();

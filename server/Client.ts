@@ -1,6 +1,6 @@
 import WS from 'ws';
-import { ClientInfo } from './ClientInfo';
-import { Message, MessageIdentity, MessageType } from '../common/Message';
+import { ClientInfo } from './ClientInfo.js';
+import { Message, MessageIdentity, MessageType } from './Message.js';
 
 export class Client {
   socket: WS;
