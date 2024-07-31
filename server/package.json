@@ -9,6 +9,7 @@
     "ws": "^8.18.0"
   },
   "scripts": {
-    "start": "bun --watch main.ts"
+    "start": "bun --watch main.ts",
+    "build": "npm i"
   }
 }
